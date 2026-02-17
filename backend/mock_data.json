@@ -1,0 +1,140 @@
+{
+  "status": "success",
+  "timestamp": "2026-02-13T00:42:44.194177",
+  "state": "Maharashtra",
+  "count": 10,
+  "data": [
+    {
+      "station": "Ahmednagar-Station-10",
+      "city": "Ahmednagar",
+      "latitude": 21.82,
+      "longitude": 79.76,
+      "CO": 1.14,
+      "NO2": 137.1,
+      "PM10": 232.88,
+      "PM2.5": 17.33,
+      "SO2": 49.5,
+      "overall_aqi": 232.88
+    },
+    {
+      "station": "Aurangabad-Station-4",
+      "city": "Aurangabad",
+      "latitude": 19.28,
+      "longitude": 79.74,
+      "CO": 4.12,
+      "NO2": 124.97,
+      "PM10": 110.66,
+      "PM2.5": 99.22,
+      "SO2": 77.7,
+      "overall_aqi": 124.97
+    },
+    {
+      "station": "Jalgaon-Station-9",
+      "city": "Jalgaon",
+      "latitude": 18.31,
+      "longitude": 79.41,
+      "CO": 3.68,
+      "NO2": 122.19,
+      "PM10": 59.68,
+      "PM2.5": 61.53,
+      "SO2": 82.78,
+      "overall_aqi": 122.19
+    },
+    {
+      "station": "Kolhapur-Station-7",
+      "city": "Kolhapur",
+      "latitude": 19.67,
+      "longitude": 72.58,
+      "CO": 3.47,
+      "NO2": 70.07,
+      "PM10": 149.11,
+      "PM2.5": 124.16,
+      "SO2": 23.69,
+      "overall_aqi": 149.11
+    },
+    {
+      "station": "Mumbai-Station-1",
+      "city": "Mumbai",
+      "latitude": 19.14,
+      "longitude": 76.13,
+      "CO": 3.85,
+      "NO2": 42.59,
+      "PM10": 173.44,
+      "PM2.5": 65.29,
+      "SO2": 67.59,
+      "overall_aqi": 173.44
+    },
+    {
+      "station": "Nagpur-Station-3",
+      "city": "Nagpur",
+      "latitude": 19.43,
+      "longitude": 77.4,
+      "CO": 4.81,
+      "NO2": 114.28,
+      "PM10": 223.58,
+      "PM2.5": 55.61,
+      "SO2": 98.69,
+      "overall_aqi": 223.58
+    },
+    {
+      "station": "Nanded-Station-8",
+      "city": "Nanded",
+      "latitude": 18.94,
+      "longitude": 78.38,
+      "CO": 2.3,
+      "NO2": 147.43,
+      "PM10": 108.28,
+      "PM2.5": 104.77,
+      "SO2": 81.93,
+      "overall_aqi": 147.43
+    },
+    {
+      "station": "Nashik-Station-5",
+      "city": "Nashik",
+      "latitude": 18.22,
+      "longitude": 77.41,
+      "CO": 1.24,
+      "NO2": 20.43,
+      "PM10": 177.18,
+      "PM2.5": 134.3,
+      "SO2": 20.45,
+      "overall_aqi": 177.18
+    },
+    {
+      "station": "Pune-Station-2",
+      "city": "Pune",
+      "latitude": 21.14,
+      "longitude": 73.18,
+      "CO": 0.72,
+      "NO2": 80.08,
+      "PM10": 25.12,
+      "PM2.5": 148.57,
+      "SO2": 18.04,
+      "overall_aqi": 148.57
+    },
+    {
+      "station": "Solapur-Station-6",
+      "city": "Solapur",
+      "latitude": 18.39,
+      "longitude": 76.16,
+      "CO": 4.37,
+      "NO2": 102.88,
+      "PM10": 63.7,
+      "PM2.5": 32.03,
+      "SO2": 72.29,
+      "overall_aqi": 102.88
+    }
+  ],
+  "metadata": {
+    "source": "mock-generator",
+    "note": "This is mock data in the same format as live CPCB API. Use /live-data endpoint for real data.",
+    "pollutants_included": [
+      "PM2.5",
+      "PM10",
+      "NO2",
+      "SO2",
+      "CO"
+    ],
+    "cache_duration_seconds": 600
+  }
+}
