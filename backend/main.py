@@ -526,6 +526,43 @@ async def get_available_eco_actions():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/admin/eco-credits/pending")
+async def admin_get_pending_eco_credits():
+    """
+    Admin endpoint: return pending/unverified eco credit submissions.
+    """
+    try:
+        pending = eco_system.get_pending_credits()
+        return {
+            "count": len(pending),
+            "pending": pending,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class VerifyRequest(BaseModel):
+    request_id: str
+    verified_by: str
+
+
+@app.post("/admin/eco-credits/verify")
+async def admin_verify_eco_credit(payload: VerifyRequest):
+    """
+    Admin endpoint: verify a submitted eco credit.
+    """
+    try:
+        success = eco_system.verify_eco_credit(payload.request_id, payload.verified_by)
+        if not success:
+            raise HTTPException(status_code=404, detail="Credit not found or could not be verified")
+        return {"success": True, "request_id": payload.request_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/notifications/generate")
 async def generate_citizen_notifications(user_profiles: List[Dict], state: str = ""):
     """

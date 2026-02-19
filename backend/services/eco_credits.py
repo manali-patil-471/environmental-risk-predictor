@@ -208,6 +208,24 @@ class EcoCreditsSystem:
                 
         except Exception as e:
             print(f"Error saving eco credit: {e}")
+
+    def get_pending_credits(self) -> List[Dict]:
+        """
+        Return list of eco credit submissions that are not yet verified.
+        """
+        credits_file = Path("data/eco_credits.json")
+        if not credits_file.exists():
+            return []
+
+        try:
+            with open(credits_file, "r") as f:
+                all_credits = json.load(f)
+
+            pending = [c for c in all_credits if not c.get("verified", False)]
+            return pending
+        except Exception as e:
+            print(f"Error reading pending credits: {e}")
+            return []
     
     def get_available_actions(self) -> Dict:
         """

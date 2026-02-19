@@ -151,6 +151,43 @@ export async function fetchEcoCredits(userId?: string) {
   }
 }
 
+export async function submitEcoAction(payload: {
+  user_id: string;
+  action_type: string;
+  description: string;
+  photo_url?: string | null;
+  location_lat?: number | null;
+  location_lon?: number | null;
+}) {
+  try {
+    const { data } = await api.post('/eco-credits/submit', payload);
+    return data;
+  } catch (err) {
+    console.warn('Submit eco action failed', err);
+    throw err;
+  }
+}
+
+export async function fetchPendingEcoCredits() {
+  try {
+    const { data } = await api.get('/admin/eco-credits/pending');
+    return data;
+  } catch (err) {
+    console.warn('Fetch pending eco credits failed', err);
+    return { pending: [] };
+  }
+}
+
+export async function verifyEcoCredit(request_id: string, verified_by: string) {
+  try {
+    const { data } = await api.post('/admin/eco-credits/verify', { request_id, verified_by });
+    return data;
+  } catch (err) {
+    console.warn('Verify eco credit failed', err);
+    throw err;
+  }
+}
+
 export async function fetchHistoricalAQI(params: {
   station?: string;
   city?: string;

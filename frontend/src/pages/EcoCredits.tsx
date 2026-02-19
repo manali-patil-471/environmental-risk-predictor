@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LEADERBOARD } from '@/lib/mockData';
 import { cn } from '@/lib/utils';
+import { submitEcoAction } from '@/lib/api';
 import { Trophy, Leaf, Zap, Share2, TrendingUp, Star, Award, Target } from 'lucide-react';
 import { RadialBarChart, RadialBar, ResponsiveContainer, Tooltip } from 'recharts';
 
@@ -30,6 +31,15 @@ const BADGES = [
 
 export default function EcoCredits() {
   const [tab, setTab] = useState<'overview' | 'actions' | 'leaderboard' | 'badges'>('overview');
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    user_id: 'test_user',
+    action_type: '',
+    description: '',
+    photo_url: '',
+    location_lat: undefined as number | undefined,
+    location_lon: undefined as number | undefined,
+  });
   const progressPct = (MY_CREDITS / NEXT_LEVEL_CREDITS) * 100;
 
   const radialData = [{ name: 'Progress', value: Math.round(progressPct), fill: '#22c55e' }];
@@ -135,6 +145,62 @@ export default function EcoCredits() {
       {/* Eco Actions */}
       {(tab === 'overview' || tab === 'actions') && (
         <div>
+          <div className="mb-4">
+            <button
+              onClick={() => setShowForm(s => !s)}
+              className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm"
+            >
+              {showForm ? 'Hide' : 'Log New Action'}
+            </button>
+          </div>
+
+          {showForm && (
+            <div className="glass-card rounded-xl p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input className="input" placeholder="User ID" value={form.user_id} onChange={e => setForm(f => ({ ...f, user_id: e.target.value }))} />
+                <select className="input" value={form.action_type} onChange={e => setForm(f => ({ ...f, action_type: e.target.value }))}>
+                  <option value="">Select action</option>
+                  {ECO_ACTIONS.map(a => (
+                    <option key={a.id} value={a.action}>{a.action}</option>
+                  ))}
+                </select>
+                <input className="input col-span-1 md:col-span-2" placeholder="Description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                <input className="input" placeholder="Photo URL (optional)" value={form.photo_url} onChange={e => setForm(f => ({ ...f, photo_url: e.target.value }))} />
+                <div className="flex items-center gap-2">
+                  <button className="px-3 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm" onClick={() => {
+                    if (!navigator.geolocation) return alert('Geolocation not available');
+                    navigator.geolocation.getCurrentPosition(pos => {
+                      setForm(f => ({ ...f, location_lat: pos.coords.latitude, location_lon: pos.coords.longitude }));
+                      alert('Location captured');
+                    }, () => alert('Could not get location'));
+                  }}>Use My Location</button>
+                  <div className="text-xs text-muted-foreground">Lat: {form.location_lat ?? '-'} Lon: {form.location_lon ?? '-'}</div>
+                </div>
+                <div className="md:col-span-2 flex items-center gap-2">
+                  <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground" onClick={async () => {
+                    try {
+                      if (!form.action_type || !form.description) return alert('Please fill action and description');
+                      const payload = {
+                        user_id: form.user_id,
+                        action_type: form.action_type,
+                        description: form.description,
+                        photo_url: form.photo_url || undefined,
+                        location_lat: form.location_lat,
+                        location_lon: form.location_lon,
+                      };
+                      await submitEcoAction(payload);
+                      alert('Submitted — will appear in admin for verification');
+                      setShowForm(false);
+                    } catch (err) {
+                      console.error(err);
+                      alert('Failed to submit. See console.');
+                    }
+                  }}>Submit Action</button>
+                  <button className="px-3 py-2 rounded-lg bg-muted" onClick={() => setShowForm(false)}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
           <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary" />
             Eco Actions

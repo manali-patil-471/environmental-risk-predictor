@@ -9,6 +9,7 @@ import MapView from "./pages/MapView";
 import StationDetails from "./pages/StationDetails";
 import HealthAdvisory from "./pages/HealthAdvisory";
 import EcoCredits from "./pages/EcoCredits";
+import AdminEcoCredits from "./pages/AdminEcoCredits";
 import AlertCenter from "./pages/AlertCenter";
 import UserProfile from "./pages/UserProfile";
 import HistoricalTrends from "./pages/HistoricalTrends";
@@ -28,6 +29,7 @@ const App = () => (
           <Route element={<Layout><StationDetails /></Layout>} path="/station" />
           <Route element={<Layout><HealthAdvisory /></Layout>} path="/health" />
           <Route element={<Layout><EcoCredits /></Layout>} path="/eco-credits" />
+          <Route element={<Layout><AdminEcoCredits /></Layout>} path="/admin/eco-credits" />
           <Route element={<Layout><AlertCenter /></Layout>} path="/alerts" />
           <Route element={<Layout><UserProfile /></Layout>} path="/profile" />
           <Route element={<Layout><HistoricalTrends /></Layout>} path="/trends" />
