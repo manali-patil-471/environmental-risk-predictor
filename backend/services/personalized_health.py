@@ -49,7 +49,7 @@ class PersonalizedHealthEngine:
         return {
             "original_aqi": aqi,
             "adjusted_risk_score": adjusted_risk_score,
-            "base_risk_level": base_risk_level,
+            "base_risk_level": base_risk,
             "personal_risk_level": personal_risk_level,
             "health_multiplier": health_multiplier,
             "age_multiplier": age_multiplier,

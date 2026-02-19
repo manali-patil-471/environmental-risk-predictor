@@ -49,11 +49,13 @@ class EcoCreditsSystem:
         
         # Check verification requirements
         requirements = self.verification_requirements[action_type]
+        # If verification materials are missing, accept the submission but mark
+        # it as unverified for manual review instead of rejecting outright.
         if requirements.get("photo_required") and not photo_url:
-            raise ValueError(f"Photo required for {action_type}")
-        
+            print(f"Note: photo missing for {action_type}; submission will be saved as unverified")
+
         if requirements.get("location_required") and (not location_lat or not location_lon):
-            raise ValueError(f"Location required for {action_type}")
+            print(f"Note: location missing for {action_type}; submission will be saved as unverified")
         
         # Create eco credit entry
         credits_earned = self.credit_values[action_type]

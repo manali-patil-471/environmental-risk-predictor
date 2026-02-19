@@ -22,5 +22,17 @@
     "credits_earned": 50,
     "verified": false,
     "timestamp": "2026-02-14T00:24:58.032945"
+  },
+  {
+    "request_id": "4a8339eb-2c3c-4ef2-91ee-ed85e65c790b",
+    "user_id": "test_user",
+    "action_type": "tree_planting",
+    "photo_url": null,
+    "location_lat": 19.07,
+    "location_lon": 72.87,
+    "description": "Planted a neem tree in my locality",
+    "credits_earned": 50,
+    "verified": false,
+    "timestamp": "2026-02-19T13:37:43.132878"
   }
 ]

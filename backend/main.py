@@ -13,6 +13,7 @@ from ml_models.risk_zones_mapper import enrich_all_stations_with_risk
 from ml_models.source_identifier import identify_sources_for_stations
 from ml_models.pollution_predictor import PollutionPredictor
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 # Import new modules
 from models.user_models import UserProfile, HealthAdvice, NotificationMessage, EcoCredit, MunicipalRequest
@@ -450,21 +451,28 @@ async def trigger_municipal_alerts(state: str = ""):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class EcoActionRequest(BaseModel):
+    user_id: str
+    action_type: str
+    description: str
+    photo_url: Optional[str] = None
+    location_lat: Optional[float] = None
+    location_lon: Optional[float] = None
+
+
 @app.post("/eco-credits/submit")
-async def submit_eco_action(user_id: str, action_type: str, description: str,
-                         photo_url: Optional[str] = None, location_lat: Optional[float] = None,
-                         location_lon: Optional[float] = None):
+async def submit_eco_action(payload: EcoActionRequest):
     """
     Submit an eco-action to earn credits.
     """
     try:
         eco_credit = eco_system.submit_eco_action(
-            user_id=user_id,
-            action_type=action_type,
-            description=description,
-            photo_url=photo_url,
-            location_lat=location_lat,
-            location_lon=location_lon
+            user_id=payload.user_id,
+            action_type=payload.action_type,
+            description=payload.description,
+            photo_url=payload.photo_url,
+            location_lat=payload.location_lat,
+            location_lon=payload.location_lon
         )
         
         return {
