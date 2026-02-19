@@ -11,24 +11,21 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.map-container {
-  height: 70vh;
-  width: 100%;
-  background: #f0f9ff;
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
 }
 
-.station-marker {
-  transition: all 0.3s ease;
-}
-
-.station-marker:hover {
-  transform: scale(1.1);
-}
-
-/* Risk Level Colors */
 .risk-good { background-color: #10b981; }
-.risk-satisfactory { background-color: #84cc16; }
-.risk-moderate { background-color: #f59e0b; }
+.risk-satisfactory { background-color: #f59e0b; }
+.risk-moderate { background-color: #f97316; }
 .risk-poor { background-color: #ef4444; }
-.risk-very-poor { background-color: #991b1b; }
-.risk-severe { background-color: #991b1b; }
+.risk-very-poor { background-color: #b91c1c; }
+.risk-severe { background-color: #7f1d1d; }
+
+.map-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}

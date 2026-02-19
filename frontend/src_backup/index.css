@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.map-container {
+  height: 70vh;
+  width: 100%;
+  background: #f0f9ff;
+}
+
+.station-marker {
+  transition: all 0.3s ease;
+}
+
+.station-marker:hover {
+  transform: scale(1.1);
+}
+
+/* Risk Level Colors */
+.risk-good { background-color: #10b981; }
+.risk-satisfactory { background-color: #84cc16; }
+.risk-moderate { background-color: #f59e0b; }
+.risk-poor { background-color: #ef4444; }
+.risk-very-poor { background-color: #991b1b; }
+.risk-severe { background-color: #991b1b; }
