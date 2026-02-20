@@ -1,19 +1,68 @@
+<<<<<<< HEAD
 import { useState } from 'react';
+=======
+import { useEffect, useState } from 'react';
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 import { useSearchParams, Link } from 'react-router-dom';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
 import { INDIA_STATIONS, HOURLY_TRENDS, getAQICategory } from '@/lib/mockData';
+<<<<<<< HEAD
+=======
+import { fetchLiveData } from '@/lib/api';
+import { getPreferredCity, onPreferredCityChange } from '@/lib/preferredCity';
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 import { AQIGauge } from '@/components/AQICard';
 import { ArrowLeft, Wind, Droplets, Thermometer, MapPin, Clock, Radio, Factory, Car, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function StationDetails() {
   const [params] = useSearchParams();
+<<<<<<< HEAD
   const stationId = params.get('id') || INDIA_STATIONS[0].id;
   const station = INDIA_STATIONS.find(s => s.id === stationId) || INDIA_STATIONS[0];
   const [activeTab, setActiveTab] = useState<'overview' | 'trend' | 'forecast'>('overview');
+=======
+  const [stations, setStations] = useState(INDIA_STATIONS);
+  const [dataSource, setDataSource] = useState<'live' | 'mock'>('mock');
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'overview' | 'trend' | 'forecast'>('overview');
+  const [preferredCity, setPreferredCity] = useState(getPreferredCity());
+  const routeStationId = params.get('id');
+
+  useEffect(() => {
+    const loadLiveStations = async () => {
+      try {
+        const data = await fetchLiveData();
+        if (data?.stations?.length) {
+          setStations(data.stations);
+          setDataSource(data.status === 'mock' ? 'mock' : 'live');
+        }
+      } catch {
+        setDataSource('mock');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLiveStations();
+  }, []);
+
+  useEffect(() => {
+    return onPreferredCityChange(() => setPreferredCity(getPreferredCity()));
+  }, []);
+
+  const station =
+    (routeStationId
+      ? stations.find(s => String(s.id) === routeStationId) ||
+        stations.find(s => String(s.name) === routeStationId)
+      : undefined) ||
+    stations.find(s => String(s.city) === preferredCity) ||
+    stations[0] ||
+    INDIA_STATIONS[0];
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 
   const cat = getAQICategory(station.aqi);
 
@@ -59,6 +108,15 @@ export default function StationDetails() {
             )}>
               ● {station.status}
             </span>
+<<<<<<< HEAD
+=======
+            <span className={cn(
+              "px-2 py-1 rounded-full text-xs",
+              dataSource === 'live' ? 'text-primary bg-primary/10' : 'text-aqi-unhealthy bg-aqi-unhealthy/10'
+            )}>
+              {loading ? 'loading...' : dataSource === 'live' ? 'live' : 'mock'}
+            </span>
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{station.state}</span>

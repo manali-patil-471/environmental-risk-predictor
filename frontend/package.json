@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "@craco/craco": "^7.1.0",
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -64,9 +68,15 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+<<<<<<< HEAD
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+=======
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

@@ -5,10 +5,22 @@ const API_BASE = 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_BASE,
+<<<<<<< HEAD
   timeout: 5000,
   headers: { 'Content-Type': 'application/json' },
 });
 
+=======
+  timeout: 30000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+let liveDataCache: any = null;
+let liveDataCacheTs = 0;
+let liveDataInFlight: Promise<any> | null = null;
+const LIVE_DATA_CACHE_TTL_MS = 30000;
+
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 // Intercept and fallback to mock data if API unavailable
 api.interceptors.response.use(
   (response) => response,
@@ -18,18 +30,112 @@ api.interceptors.response.use(
   }
 );
 
+<<<<<<< HEAD
 export async function fetchLiveData() {
   try {
     const { data } = await api.get('/live-data');
     return data;
   } catch {
+=======
+function mapBackendStationToUI(station: any, index: number) {
+  const aqi = Math.round(station.overall_aqi ?? 0);
+  const sourceText = station.likely_pollution_source || station.source || '';
+  const sources = typeof sourceText === 'string'
+    ? sourceText.split(',').map((s: string) => s.trim()).filter(Boolean)
+    : [];
+
+  return {
+    id: station.station || `station-${index}`,
+    name: station.station || `Station ${index + 1}`,
+    city: station.city || 'Unknown City',
+    state: station.state || 'Unknown State',
+    lat: Number(station.latitude) || 0,
+    lng: Number(station.longitude) || 0,
+    aqi,
+    pm25: Number(station['PM2.5'] ?? 0),
+    pm10: Number(station.PM10 ?? 0),
+    no2: Number(station.NO2 ?? 0),
+    so2: Number(station.SO2 ?? 0),
+    co: Number(station.CO ?? 0),
+    o3: Number(station.OZONE ?? station.O3 ?? 0),
+    temp: Number(station.temperature_2m ?? 0),
+    humidity: Number(station.relative_humidity_2m ?? 0),
+    wind: Number(station.wind_speed_10m ?? 0),
+    status: 'online',
+    lastUpdated: 'Just now',
+    sources,
+  };
+}
+
+export async function fetchLiveData(city?: string) {
+  if (city) {
+    try {
+      const { data } = await api.get('/live-data', { params: { city } });
+      const stations = Array.isArray(data?.data)
+        ? data.data.map((s: any, i: number) => mapBackendStationToUI(s, i))
+        : INDIA_STATIONS;
+      return {
+        stations,
+        count: data?.count ?? stations.length,
+        timestamp: data?.timestamp ?? new Date().toISOString(),
+        source: data?.source ?? 'cpcb',
+        status: 'success',
+      };
+    } catch {
+      return {
+        stations: INDIA_STATIONS.filter((s) => s.city === city),
+        timestamp: new Date().toISOString(),
+        status: 'mock',
+      };
+    }
+  }
+
+  if (liveDataCache && (Date.now() - liveDataCacheTs) < LIVE_DATA_CACHE_TTL_MS) {
+    return liveDataCache;
+  }
+
+  if (liveDataInFlight) {
+    return liveDataInFlight;
+  }
+
+  liveDataInFlight = (async () => {
+  try {
+    const { data } = await api.get('/live-data');
+    const stations = Array.isArray(data?.data)
+      ? data.data.map((s: any, i: number) => mapBackendStationToUI(s, i))
+      : INDIA_STATIONS;
+
+    const result = {
+      stations,
+      count: data?.count ?? stations.length,
+      timestamp: data?.timestamp ?? new Date().toISOString(),
+      source: data?.source ?? 'cpcb',
+      status: 'success',
+    };
+    liveDataCache = result;
+    liveDataCacheTs = Date.now();
+    return result;
+  } catch {
+    if (liveDataCache) {
+      return liveDataCache;
+    }
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     // Return mock data as fallback
     return {
       stations: INDIA_STATIONS,
       timestamp: new Date().toISOString(),
       status: 'mock',
     };
+<<<<<<< HEAD
   }
+=======
+  } finally {
+    liveDataInFlight = null;
+  }
+  })();
+
+  return liveDataInFlight;
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 }
 
 export async function fetchPredictions(stationId?: string) {
@@ -187,6 +293,7 @@ export async function fetchAQITrends(city?: string, period: string = '7d') {
     const { data } = await api.get('/aqi-trends', { params: { city, period } });
     return data;
   } catch {
+<<<<<<< HEAD
     // Return mock trends data
     return {
       period,
@@ -200,6 +307,34 @@ export async function fetchAQITrends(city?: string, period: string = '7d') {
         { city: 'Pune', avg_aqi: 95, min_aqi: 60, max_aqi: 135, std_aqi: 21 },
         { city: 'Ahmedabad', avg_aqi: 145, min_aqi: 100, max_aqi: 190, std_aqi: 26 },
       ],
+=======
+    const live = await fetchLiveData();
+    const stations = Array.isArray(live?.stations) ? live.stations : INDIA_STATIONS;
+    const filtered = city ? stations.filter((s: any) => s.city === city) : stations;
+    const grouped = new Map<string, number[]>();
+
+    for (const s of filtered) {
+      const key = String(s.city || 'Unknown');
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)!.push(Number(s.aqi || 0));
+    }
+
+    const cities = Array.from(grouped.entries()).map(([name, values]) => {
+      const avg = values.reduce((a, b) => a + b, 0) / values.length;
+      const variance = values.reduce((sum, v) => sum + ((v - avg) ** 2), 0) / values.length;
+      return {
+        city: name,
+        avg_aqi: avg,
+        min_aqi: Math.min(...values),
+        max_aqi: Math.max(...values),
+        std_aqi: Math.sqrt(variance),
+      };
+    }).sort((a, b) => b.avg_aqi - a.avg_aqi);
+
+    return {
+      period,
+      cities,
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
       status: 'mock',
     };
   }

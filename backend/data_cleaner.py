@@ -39,19 +39,36 @@ def clean_and_pivot_aqdata(df):
         print("⚠️ Warning: All rows had invalid data and were removed")
         return pd.DataFrame()
     
+<<<<<<< HEAD
+=======
+    # Preserve state if present; otherwise fill placeholder.
+    if 'state' not in df_clean.columns:
+        df_clean['state'] = 'Unknown State'
+    else:
+        df_clean['state'] = df_clean['state'].fillna('Unknown State')
+
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     # Rename pollutant_id to pollutant for consistency
     df_clean = df_clean.rename(columns={'pollutant_id': 'pollutant', 'avg_value': 'pollutant_avg'})
     
     # Pivot the data: make each pollutant a column
     pivot_df = df_clean.pivot_table(
+<<<<<<< HEAD
         index=['station', 'city', 'latitude', 'longitude'],
+=======
+        index=['station', 'city', 'state', 'latitude', 'longitude'],
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
         columns='pollutant',
         values='pollutant_avg',
         aggfunc='first'  # In case of duplicates, take first value
     ).reset_index()
     
     # Get all pollutant columns dynamically (instead of hardcoding)
+<<<<<<< HEAD
     pollutant_cols = [col for col in pivot_df.columns if col not in ['station', 'city', 'latitude', 'longitude']]
+=======
+    pollutant_cols = [col for col in pivot_df.columns if col not in ['station', 'city', 'state', 'latitude', 'longitude']]
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     
     print(f"✓ Found pollutants: {sorted(pollutant_cols)}")
     print(f"✓ Stations after pivot: {len(pivot_df)}")
@@ -84,7 +101,11 @@ def clean_and_pivot_aqdata(df):
         )
     
     # Reorder columns: station, city, lat, long, then pollutants, then aqi
+<<<<<<< HEAD
     final_cols = ['station', 'city', 'latitude', 'longitude'] + sorted(pollutant_cols) + ['overall_aqi']
+=======
+    final_cols = ['station', 'city', 'state', 'latitude', 'longitude'] + sorted(pollutant_cols) + ['overall_aqi']
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     final_cols = [col for col in final_cols if col in pivot_df.columns]  # Only include existing columns
     
     print(f"✓ Final columns: {final_cols}")
@@ -138,4 +159,8 @@ def calculate_aqi_index(pollutants_dict):
         
         sub_indices.append(sub_index)
     
+<<<<<<< HEAD
     return max(sub_indices) if sub_indices else 0
+=======
+    return max(sub_indices) if sub_indices else 0
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)

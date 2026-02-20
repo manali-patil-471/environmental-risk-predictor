@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 import { useState } from 'react';
 import { INDIA_STATIONS, getAQICategory } from '@/lib/mockData';
+=======
+import { useEffect, useMemo, useState } from 'react';
+import { INDIA_STATIONS, getAQICategory } from '@/lib/mockData';
+import { fetchLiveData } from '@/lib/api';
+import { getPreferredCity, onPreferredCityChange, setPreferredCity } from '@/lib/preferredCity';
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 import { cn } from '@/lib/utils';
 import { Heart, Shield, AlertTriangle, Baby, User, UserCheck, Wind, Eye, Activity } from 'lucide-react';
 
@@ -32,11 +39,91 @@ const HEALTH_TIPS = {
 const CONDITIONS = ['Asthma', 'Heart Disease', 'COPD', 'Diabetes', 'Hypertension', 'Allergies'];
 
 export default function HealthAdvisory() {
+<<<<<<< HEAD
   const [selectedCity, setSelectedCity] = useState(INDIA_STATIONS[0].id);
   const [group, setGroup] = useState<'general' | 'children' | 'elderly' | 'pregnant'>('general');
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
 
   const station = INDIA_STATIONS.find(s => s.id === selectedCity) || INDIA_STATIONS[0];
+=======
+  const [stations, setStations] = useState(INDIA_STATIONS);
+  const [selectedCity, setSelectedCity] = useState<string>(getPreferredCity() || INDIA_STATIONS[0].city);
+  const [group, setGroup] = useState<'general' | 'children' | 'elderly' | 'pregnant'>('general');
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [preferredCity, setPreferredCityState] = useState(getPreferredCity());
+
+  useEffect(() => {
+    const loadLiveStations = async () => {
+      try {
+        const data = await fetchLiveData();
+        if (data?.stations?.length) {
+          setStations(data.stations);
+        }
+      } catch {
+        setStations(INDIA_STATIONS);
+      }
+    };
+
+    loadLiveStations();
+  }, []);
+
+  useEffect(() => onPreferredCityChange(() => setPreferredCityState(getPreferredCity())), []);
+
+  const cityStations = useMemo(() => {
+    if (!stations.length) return INDIA_STATIONS;
+    const byCity = new Map<string, any>();
+    for (const s of stations) {
+      const city = String(s.city || '').trim();
+      if (!city) continue;
+      const prev = byCity.get(city);
+      if (!prev || Number(s.aqi || 0) > Number(prev.aqi || 0)) {
+        byCity.set(city, s);
+      }
+    }
+    return Array.from(byCity.values()).sort((a, b) => a.city.localeCompare(b.city));
+  }, [stations]);
+
+  useEffect(() => {
+    if (!cityStations.length) return;
+    const preferredExists = cityStations.some((s) => s.city === preferredCity);
+    if (preferredExists) {
+      setSelectedCity(preferredCity);
+      return;
+    }
+    const selectedExists = cityStations.some((s) => s.city === selectedCity);
+    if (!selectedExists) {
+      setSelectedCity(cityStations[0].city);
+    }
+  }, [preferredCity, cityStations, selectedCity]);
+
+  useEffect(() => {
+    const selectedExistsInLive = cityStations.some((s) => s.city === selectedCity);
+    if (selectedExistsInLive || !selectedCity) return;
+
+    const loadSelectedCity = async () => {
+      try {
+        const data = await fetchLiveData(selectedCity);
+        if (data?.stations?.length) {
+          setStations((prev) => {
+            const merged = [...prev];
+            for (const st of data.stations) {
+              if (!merged.some((p) => p.id === st.id)) {
+                merged.push(st);
+              }
+            }
+            return merged;
+          });
+        }
+      } catch {
+        // Keep existing stations if city-specific fetch fails.
+      }
+    };
+
+    loadSelectedCity();
+  }, [selectedCity, cityStations]);
+
+  const station = cityStations.find(s => s.city === selectedCity) || cityStations[0] || INDIA_STATIONS[0];
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
   const cat = getAQICategory(station.aqi);
 
   const getRiskLevel = (aqi: number) => {
@@ -65,15 +152,29 @@ export default function HealthAdvisory() {
       <div className="glass-card rounded-xl p-4">
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-2">Select your city</label>
         <div className="flex flex-wrap gap-2">
+<<<<<<< HEAD
           {INDIA_STATIONS.map(s => {
+=======
+          {cityStations.map(s => {
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
             const c = getAQICategory(s.aqi);
             return (
               <button
                 key={s.id}
+<<<<<<< HEAD
                 onClick={() => setSelectedCity(s.id)}
                 className={cn(
                   "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                   selectedCity === s.id
+=======
+                onClick={() => {
+                  setSelectedCity(s.city);
+                  setPreferredCity(s.city);
+                }}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                  selectedCity === s.city
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border glass-card text-muted-foreground hover:text-foreground"
                 )}

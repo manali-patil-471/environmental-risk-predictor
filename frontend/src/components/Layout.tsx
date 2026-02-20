@@ -1,5 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
+<<<<<<< HEAD
 import { useState } from 'react';
+=======
+import { useEffect, useMemo, useState } from 'react';
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 import {
   LayoutDashboard,
   Map,
@@ -18,7 +22,14 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+<<<<<<< HEAD
 import { MOCK_ALERTS } from '@/lib/mockData';
+=======
+import { INDIA_STATIONS, MOCK_ALERTS } from '@/lib/mockData';
+import { fetchLiveData } from '@/lib/api';
+import { getPreferredCity, setPreferredCity } from '@/lib/preferredCity';
+import { useAuth } from '@/contexts/AuthContext';
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 
 const NAV_ITEMS = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -36,11 +47,67 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
+<<<<<<< HEAD
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const unreadCount = MOCK_ALERTS.filter((a: any) => !a.read).length;
+=======
+  const { user } = useAuth();
+  const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [cities, setCities] = useState<string[]>([]);
+  const [selectedCity, setSelectedCity] = useState('');
+
+  const unreadCount = MOCK_ALERTS.filter((a: any) => !a.read).length;
+  const userInitials = useMemo(() => {
+    const source = user?.displayName || user?.email || 'AQ';
+    const parts = source.split(/[\s@._-]+/).filter(Boolean);
+    if (!parts.length) return 'AQ';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }, [user?.displayName, user?.email]);
+
+  useEffect(() => {
+    const loadCities = async () => {
+      const fallbackCities = Array.from(new Set(INDIA_STATIONS.map((s) => s.city))).sort();
+      try {
+        const data = await fetchLiveData();
+        const liveCities = Array.isArray(data?.stations)
+          ? Array.from(new Set(data.stations.map((s: any) => String(s.city || '').trim()).filter(Boolean))).sort()
+          : [];
+        const cityList = liveCities.length ? liveCities : fallbackCities;
+        setCities(cityList);
+
+        const preferred = getPreferredCity();
+        if (preferred && cityList.includes(preferred)) {
+          setSelectedCity(preferred);
+        } else if (cityList.length) {
+          setSelectedCity(cityList[0]);
+          setPreferredCity(cityList[0]);
+        }
+      } catch {
+        setCities(fallbackCities);
+        const preferred = getPreferredCity();
+        if (preferred && fallbackCities.includes(preferred)) {
+          setSelectedCity(preferred);
+        } else if (fallbackCities.length) {
+          setSelectedCity(fallbackCities[0]);
+          setPreferredCity(fallbackCities[0]);
+        }
+      }
+    };
+
+    loadCities();
+  }, []);
+
+  const onCityChange = (city: string) => {
+    setSelectedCity(city);
+    setPreferredCity(city);
+  };
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -192,6 +259,24 @@ export default function Layout({ children }: LayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
+<<<<<<< HEAD
+=======
+            <div className="hidden lg:flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Preferred city</span>
+              <select
+                value={selectedCity}
+                onChange={(e) => onCityChange(e.target.value)}
+                className="bg-muted/50 border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:border-primary"
+              >
+                {cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
             {/* Live indicator */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass-card text-xs">
               <span className="w-2 h-2 rounded-full status-live" />
@@ -211,7 +296,11 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* User avatar */}
             <Link to="/profile" className="w-8 h-8 rounded-full bg-gradient-eco flex items-center justify-center text-xs font-bold text-white hover:shadow-glow transition-all">
+<<<<<<< HEAD
               RK
+=======
+              {userInitials}
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
             </Link>
           </div>
         </header>

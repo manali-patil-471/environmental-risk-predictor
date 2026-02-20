@@ -1,1 +1,10 @@
+<<<<<<< HEAD
 venv/ 
+=======
+.venv/ 
+node_modules/
+frontend/node_modules/
+frontend/src/node_modules/
+backend/.env
+frontend/src/.env
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)

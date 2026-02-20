@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { useState, useEffect } from 'react';
+=======
+import { useState, useEffect, useMemo } from 'react';
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, Legend, BarChart, Bar
@@ -13,11 +17,14 @@ const PERIODS = [
   { value: '90d', label: '90 Days' },
 ];
 
+<<<<<<< HEAD
 const CITIES = [
   'Delhi', 'Mumbai', 'Bengaluru', 'Kolkata', 'Chennai', 
   'Hyderabad', 'Pune', 'Ahmedabad', 'Lucknow', 'Jaipur'
 ];
 
+=======
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 export default function HistoricalTrends() {
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -34,6 +41,7 @@ export default function HistoricalTrends() {
   const loadData = async () => {
     setLoading(true);
     try {
+<<<<<<< HEAD
       // Fetch historical AQI data
       const aqiData = await fetchHistoricalAQI({
         city: selectedCity || undefined,
@@ -43,6 +51,15 @@ export default function HistoricalTrends() {
 
       // Fetch trends data
       const trends = await fetchAQITrends(selectedCity || undefined, selectedPeriod);
+=======
+      const historicalPromise = fetchHistoricalAQI({
+        city: selectedCity || undefined,
+        days: days
+      });
+      const trendsPromise = fetchAQITrends(selectedCity || undefined, selectedPeriod);
+      const [aqiData, trends] = await Promise.all([historicalPromise, trendsPromise]);
+      setHistoricalData(aqiData.data || []);
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
       setTrendsData(trends.cities || []);
     } catch (error) {
       console.error('Error loading historical data:', error);
@@ -76,6 +93,15 @@ export default function HistoricalTrends() {
     ? trendsData[0].avg_aqi - trendsData[1].avg_aqi 
     : 0;
 
+<<<<<<< HEAD
+=======
+  const cityOptions = useMemo(() => {
+    const fromTrends = trendsData.map((c: any) => String(c.city || '').trim()).filter(Boolean);
+    const fromHistory = historicalData.map((r: any) => String(r.city || '').trim()).filter(Boolean);
+    return Array.from(new Set([...fromTrends, ...fromHistory])).sort();
+  }, [trendsData, historicalData]);
+
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
   const category = getAQICategory(avgAQI);
 
   return (
@@ -129,7 +155,11 @@ export default function HistoricalTrends() {
             className="px-3 py-1.5 text-sm rounded-lg bg-muted border-none focus:ring-2 focus:ring-primary"
           >
             <option value="">All Cities</option>
+<<<<<<< HEAD
             {CITIES.map((city) => (
+=======
+            {cityOptions.map((city) => (
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
               <option key={city} value={city}>{city}</option>
             ))}
           </select>

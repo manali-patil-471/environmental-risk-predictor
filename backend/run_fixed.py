@@ -7,7 +7,11 @@ def run_server():
     loop = asyncio.get_event_loop()
     
     # Create config
+<<<<<<< HEAD
     config = uvicorn.Config(app, host="127.0.0.1", port=8001, log_level="info")
+=======
+    config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="info")
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     server = uvicorn.Server(config)
     
     # Create task and run
@@ -23,7 +27,11 @@ def run_server():
 
 if __name__ == "__main__":
     print("🚀 EcoNova Sentinel Backend - Python 3.6 Compatible")
+<<<<<<< HEAD
     print("📡 Server: http://127.0.0.1:8001")
+=======
+    print("📡 Server: http://127.0.0.1:8000")
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     print("🌍 All 7 features implemented:")
     print("   ✅ Predictable Risk Engine")
     print("   ✅ Personalized Health Dashboard") 

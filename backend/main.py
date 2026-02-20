@@ -2,6 +2,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, Response
 import asyncio
 import time
+<<<<<<< HEAD
+=======
+import os
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 import json
@@ -42,7 +46,16 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
+<<<<<<< HEAD
     allow_origins=["http://localhost:3000"],  # React frontend
+=======
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],  # React/Vite frontend
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,6 +67,7 @@ cache_store: Dict[str, Any] = {
     "timestamp": 0,
     "is_loading": False,
     "state": None,
+<<<<<<< HEAD
 }
 
 CACHE_DURATION = 600  # 10 minutes in seconds
@@ -61,6 +75,18 @@ CACHE_DURATION = 600  # 10 minutes in seconds
 try:
     predictor = PollutionPredictor()
 except FileNotFoundError:
+=======
+    "city": None,
+}
+
+CACHE_DURATION = 60  # 1 minute for real-time updates
+
+try:
+    predictor = PollutionPredictor()
+except (FileNotFoundError, ValueError, Exception) as e:
+    print(f" Warning: Could not load ML predictor: {type(e).__name__}: {e}")
+    print("Backend will use fallback predictions (no ML model).")
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     predictor = None
 
 
@@ -108,7 +134,21 @@ def sanitize_dataframe_for_json(df):
     return records
 
 
+<<<<<<< HEAD
 async def fetch_and_clean_data(state: str = "Maharashtra") -> Optional[Dict[str, Any]]:
+=======
+def _period_to_days(period: str) -> int:
+    if period == "7d":
+        return 7
+    if period == "30d":
+        return 30
+    if period == "90d":
+        return 90
+    return 7
+
+
+async def fetch_and_clean_data(state: str = "", city: str = "") -> Optional[Dict[str, Any]]:
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     """
     Async wrapper to fetch data from API and clean it.
     Prevents concurrent API calls using is_loading flag.
@@ -122,10 +162,18 @@ async def fetch_and_clean_data(state: str = "Maharashtra") -> Optional[Dict[str,
     if (
         cache_store["data"] is not None
         and cache_store["state"] == state
+<<<<<<< HEAD
         and (time.time() - cache_store["timestamp"]) < CACHE_DURATION
     ):
         print(
             f"✓ Returning cached data for {state} "
+=======
+        and cache_store["city"] == city
+        and (time.time() - cache_store["timestamp"]) < CACHE_DURATION
+    ):
+        print(
+            f" Returning cached data for {state} "
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
             f"(age: {time.time() - cache_store['timestamp']:.1f}s)"
         )
         return cache_store["data"]
@@ -134,6 +182,7 @@ async def fetch_and_clean_data(state: str = "Maharashtra") -> Optional[Dict[str,
     cache_store["is_loading"] = True
 
     try:
+<<<<<<< HEAD
         print(f"🔄 Fetching fresh data for: {state}")
         # Fetch raw data from government API (blocking I/O in thread)
         loop = asyncio.get_event_loop()
@@ -163,6 +212,38 @@ async def fetch_and_clean_data(state: str = "Maharashtra") -> Optional[Dict[str,
 
         # CRITICAL: Sanitize DataFrame to remove NaN/Inf before JSON conversion
         print(f"🔄 Sanitizing data for JSON serialization...")
+=======
+        print(f" Fetching fresh data for: state={state}, city={city}")
+        # Fetch raw data from government API (blocking I/O in thread)
+        loop = asyncio.get_event_loop()
+        raw_df = await loop.run_in_executor(None, get_live_data, state, 500, city)
+        data_source = "cpcb"
+
+        if raw_df is None:
+            print(" CPCB/OpenAQ returned None")
+            return None
+
+        if raw_df.empty:
+            print(" CPCB/OpenAQ returned empty DataFrame")
+            return None
+
+        print(f" Got {len(raw_df)} raw records from {data_source}")
+        print(f"  Columns: {list(raw_df.columns)}")
+
+        # Clean and pivot data
+        print(f" Cleaning and pivoting data...")
+        cleaned_df = clean_and_pivot_aqdata(raw_df)
+
+        if cleaned_df.empty:
+            print(" Cleaned DataFrame is empty")
+            return None
+
+        print(f" Cleaned into {len(cleaned_df)} stations")
+        print(f"  Columns: {list(cleaned_df.columns)}")
+
+        # CRITICAL: Sanitize DataFrame to remove NaN/Inf before JSON conversion
+        print(f" Sanitizing data for JSON serialization...")
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
         data_json = sanitize_dataframe_for_json(cleaned_df)
 
         result = {
@@ -170,18 +251,33 @@ async def fetch_and_clean_data(state: str = "Maharashtra") -> Optional[Dict[str,
             "data": data_json,
             "timestamp": datetime.now().isoformat(),
             "state": state,
+<<<<<<< HEAD
+=======
+            "city": city,
+            "source": data_source,
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
         }
 
         # Update cache FOR THIS STATE
         cache_store["data"] = result
         cache_store["timestamp"] = time.time()
         cache_store["state"] = state
+<<<<<<< HEAD
 
         print(f"✓ Data cached successfully for {state}")
         return result
 
     except Exception as e:
         print(f"❌ Error fetching/cleaning data: {type(e).__name__}: {e}")
+=======
+        cache_store["city"] = city
+
+        print(f" Data cached successfully for {state}")
+        return result
+
+    except Exception as e:
+        print(f" Error fetching/cleaning data: {type(e).__name__}: {e}")
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
         import traceback
         traceback.print_exc()
         return None
@@ -191,7 +287,11 @@ async def fetch_and_clean_data(state: str = "Maharashtra") -> Optional[Dict[str,
 
 
 @app.get("/live-data")
+<<<<<<< HEAD
 async def live_data(state: str = ""):
+=======
+async def live_data(state: str = "", city: str = ""):
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     """
     Returns real-time, cleaned air quality data as JSON for the frontend.
 
@@ -204,7 +304,11 @@ async def live_data(state: str = ""):
     - timestamp: When data was fetched
     """
     try:
+<<<<<<< HEAD
         result = await fetch_and_clean_data(state)
+=======
+        result = await fetch_and_clean_data(state, city)
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 
         if result is None:
             raise HTTPException(
@@ -230,7 +334,11 @@ async def live_data(state: str = ""):
     except HTTPException:
         raise
     except Exception as e:
+<<<<<<< HEAD
         print(f"❌ Error in /live-data: {e}")
+=======
+        print(f" Error in /live-data: {e}")
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
         import traceback
         traceback.print_exc()
         raise HTTPException(
@@ -240,7 +348,11 @@ async def live_data(state: str = ""):
 
 
 @app.get("/live-data/{station_id}")
+<<<<<<< HEAD
 async def get_station_data(station_id: str, state: str = ""):
+=======
+async def get_station_data(station_id: str, state: str = "", city: str = ""):
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     """
     Get data for a specific station.
 
@@ -248,7 +360,11 @@ async def get_station_data(station_id: str, state: str = ""):
     - station_id: Station identifier
     """
     try:
+<<<<<<< HEAD
         result = await fetch_and_clean_data(state)
+=======
+        result = await fetch_and_clean_data(state, city)
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 
         if result is None:
             raise HTTPException(status_code=503, detail="No data available")
@@ -290,6 +406,101 @@ async def cache_statistics():
     }
 
 
+<<<<<<< HEAD
+=======
+@app.get("/historical-aqi")
+async def historical_aqi(city: str = "", station: str = "", days: int = 7):
+    """
+    Return historical AQI rows from backend/data/historical_aqi.csv.
+    Filters by city/station when provided.
+    """
+    try:
+        csv_path = os.path.join(os.path.dirname(__file__), "data", "historical_aqi.csv")
+        if not os.path.exists(csv_path):
+            raise HTTPException(status_code=404, detail="Historical dataset not found")
+
+        df = pd.read_csv(csv_path)
+        if df.empty:
+            return {"count": 0, "data": [], "days_requested": days, "source": "historical-csv"}
+
+        if "city" in df.columns and city:
+            df = df[df["city"].astype(str).str.lower() == city.lower()]
+        if "station" in df.columns and station:
+            df = df[df["station"].astype(str).str.lower() == station.lower()]
+
+        if "timestamp" in df.columns:
+            df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+            cutoff = pd.Timestamp.utcnow() - pd.Timedelta(days=max(1, days))
+            recent = df[df["timestamp"] >= cutoff]
+            if not recent.empty:
+                df = recent
+            df["timestamp"] = df["timestamp"].astype(str)
+
+        if df.empty:
+            return {"count": 0, "data": [], "days_requested": days, "source": "historical-csv"}
+
+        df = df.tail(max(24, days * 24))
+        data_json = sanitize_dataframe_for_json(df)
+        return {
+            "count": len(data_json),
+            "data": data_json,
+            "days_requested": days,
+            "source": "historical-csv",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/aqi-trends")
+async def aqi_trends(city: str = "", period: str = "7d"):
+    """
+    Return per-city AQI summary stats from backend/data/historical_aqi.csv.
+    """
+    try:
+        csv_path = os.path.join(os.path.dirname(__file__), "data", "historical_aqi.csv")
+        if not os.path.exists(csv_path):
+            raise HTTPException(status_code=404, detail="Historical dataset not found")
+
+        df = pd.read_csv(csv_path)
+        if df.empty or "overall_aqi" not in df.columns or "city" not in df.columns:
+            return {"period": period, "cities": [], "source": "historical-csv"}
+
+        if "timestamp" in df.columns:
+            df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+            cutoff = pd.Timestamp.utcnow() - pd.Timedelta(days=_period_to_days(period))
+            recent = df[df["timestamp"] >= cutoff]
+            if not recent.empty:
+                df = recent
+
+        if city:
+            df = df[df["city"].astype(str).str.lower() == city.lower()]
+
+        if df.empty:
+            return {"period": period, "cities": [], "source": "historical-csv"}
+
+        grouped = (
+            df.groupby("city", dropna=False)["overall_aqi"]
+            .agg(["mean", "min", "max", "std"])
+            .reset_index()
+            .rename(columns={"mean": "avg_aqi", "min": "min_aqi", "max": "max_aqi", "std": "std_aqi"})
+        )
+        grouped["std_aqi"] = grouped["std_aqi"].fillna(0)
+        grouped = grouped.sort_values("avg_aqi", ascending=False)
+
+        return {
+            "period": period,
+            "cities": sanitize_dataframe_for_json(grouped),
+            "source": "historical-csv",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 @app.get("/mock-data")
 async def get_mock_data(num_stations: int = 10):
     """
@@ -545,4 +756,15 @@ async def generate_citizen_notifications(user_profiles: List[Dict], state: str =
 
 if __name__ == "__main__":
     import uvicorn
+<<<<<<< HEAD
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+=======
+    import asyncio
+
+    # Python 3.6 compatible server start (avoids asyncio.run which is 3.7+)
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+    server = uvicorn.Server(config)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(server.serve())
+
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)

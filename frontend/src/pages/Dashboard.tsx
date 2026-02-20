@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { useState, useEffect } from 'react';
+=======
+import { useState, useEffect, useMemo } from 'react';
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 import { Link } from 'react-router-dom';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -10,6 +14,7 @@ import {
   Heart, Leaf, Clock
 } from 'lucide-react';
 import { INDIA_STATIONS, HOURLY_TRENDS, MOCK_ALERTS, POLLUTION_SOURCES, getAQICategory } from '@/lib/mockData';
+<<<<<<< HEAD
 import { fetchFuturePredictions } from '@/lib/api';
 import { StatCard } from '@/components/AQICard';
 import { cn } from '@/lib/utils';
@@ -21,18 +26,115 @@ const NATIONAL_AVG = Math.round(INDIA_STATIONS.reduce((s, st) => s + st.aqi, 0) 
 
 export default function Dashboard() {
   const [currentTime, setCurrentTime] = useState(new Date());
+=======
+import { fetchFuturePredictions, fetchLiveData } from '@/lib/api';
+import { StatCard } from '@/components/AQICard';
+import { cn } from '@/lib/utils';
+
+export default function Dashboard() {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [stations, setStations] = useState(INDIA_STATIONS);
+  const [dataSource, setDataSource] = useState<'live' | 'mock'>('mock');
+  const [liveLoading, setLiveLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
   const [animatedAQI, setAnimatedAQI] = useState(0);
   const [futurePredictions, setFuturePredictions] = useState<any[]>([]);
   const [predictionsLoading, setPredictionsLoading] = useState(true);
 
+<<<<<<< HEAD
+=======
+  const citySummaries = useMemo(() => {
+    const grouped = new Map<string, any[]>();
+    for (const st of stations) {
+      const city = String(st.city || '').trim();
+      if (!city) continue;
+      if (!grouped.has(city)) grouped.set(city, []);
+      grouped.get(city)!.push(st);
+    }
+
+    return Array.from(grouped.entries()).map(([city, list]) => {
+      const sortedByAqi = [...list].sort((a, b) => Number(b.aqi || 0) - Number(a.aqi || 0));
+      const maxStation = sortedByAqi[0];
+      const minStation = sortedByAqi[sortedByAqi.length - 1];
+      const avgAqi = Math.round(list.reduce((sum, s) => sum + Number(s.aqi || 0), 0) / list.length);
+      const representativeState =
+        list.find((s) => s.state && s.state !== 'Unknown State')?.state ||
+        maxStation.state ||
+        'Unknown State';
+      return {
+        id: maxStation.id,
+        name: maxStation.name,
+        city,
+        state: representativeState,
+        aqi: avgAqi,
+        maxAqi: Number(maxStation.aqi || 0),
+        minAqi: Number(minStation.aqi || 0),
+      };
+    });
+  }, [stations]);
+
+  const topPolluted = [...citySummaries].sort((a, b) => b.aqi - a.aqi).slice(0, 5);
+  const topClean = [...citySummaries].sort((a, b) => a.aqi - b.aqi).slice(0, 5);
+  const nationalAvg = stations.length
+    ? Math.round(stations.reduce((s, st) => s + st.aqi, 0) / stations.length)
+    : 0;
+
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
+<<<<<<< HEAD
     let start = 0;
     const target = NATIONAL_AVG;
+=======
+    const loadLiveData = async () => {
+      try {
+        const data = await fetchLiveData();
+        if (data?.stations?.length) {
+          setStations(data.stations);
+          setDataSource(data.status === 'mock' ? 'mock' : 'live');
+        }
+      } catch (error) {
+        console.error('Error fetching live AQI data:', error);
+        setDataSource('mock');
+      } finally {
+        setLiveLoading(false);
+      }
+    };
+
+    loadLiveData();
+  }, []);
+
+  // Auto-refresh live data every 30 seconds for real-time updates
+  useEffect(() => {
+    const refreshInterval = setInterval(async () => {
+      setIsRefreshing(true);
+      try {
+        const data = await fetchLiveData();
+        if (data?.stations?.length) {
+          setStations(data.stations);
+          setDataSource(data.status === 'mock' ? 'mock' : 'live');
+          setLastRefresh(new Date());
+        }
+      } catch (error) {
+        console.warn('Error refreshing live AQI data:', error);
+      } finally {
+        setIsRefreshing(false);
+      }
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(refreshInterval);
+  }, []);
+
+  useEffect(() => {
+    let start = 0;
+    const target = nationalAvg;
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
     const step = target / 60;
     const interval = setInterval(() => {
       start = Math.min(start + step, target);
@@ -40,7 +142,11 @@ export default function Dashboard() {
       if (start >= target) clearInterval(interval);
     }, 20);
     return () => clearInterval(interval);
+<<<<<<< HEAD
   }, []);
+=======
+  }, [nationalAvg]);
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 
   // Fetch future predictions (24-48 hours)
   useEffect(() => {
@@ -59,8 +165,54 @@ export default function Dashboard() {
     loadPredictions();
   }, []);
 
+<<<<<<< HEAD
   const unreadAlerts = MOCK_ALERTS.filter(a => !a.read);
   const nationalCategory = getAQICategory(NATIONAL_AVG);
+=======
+  const sourceBreakdown = useMemo(() => {
+    const defaultBreakdown = POLLUTION_SOURCES;
+    if (!stations.length) return defaultBreakdown;
+
+    const categories = [
+      { key: 'traffic', name: 'Traffic & Vehicles', color: '#f97316', icon: '🚗' },
+      { key: 'industrial', name: 'Industrial', color: '#ef4444', icon: '🏭' },
+      { key: 'construction', name: 'Construction', color: '#eab308', icon: '🏗️' },
+      { key: 'agriculture', name: 'Agriculture', color: '#22c55e', icon: '🌾' },
+      { key: 'residential', name: 'Residential', color: '#3b82f6', icon: '🏠' },
+    ] as const;
+
+    const counts: Record<string, number> = Object.fromEntries(categories.map(c => [c.key, 0]));
+    const stationSources = stations.flatMap((s: any) => Array.isArray(s.sources) ? s.sources : []);
+
+    for (const rawSource of stationSources) {
+      const source = String(rawSource).toLowerCase();
+      if (source.includes('traffic') || source.includes('vehicle') || source.includes('transport')) {
+        counts.traffic += 1;
+      } else if (source.includes('industry') || source.includes('industrial') || source.includes('factory')) {
+        counts.industrial += 1;
+      } else if (source.includes('construction') || source.includes('dust')) {
+        counts.construction += 1;
+      } else if (source.includes('agri') || source.includes('crop') || source.includes('burn')) {
+        counts.agriculture += 1;
+      } else if (source.includes('residential') || source.includes('household') || source.includes('domestic')) {
+        counts.residential += 1;
+      }
+    }
+
+    const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+    if (!total) return defaultBreakdown;
+
+    return categories.map(c => ({
+      name: c.name,
+      color: c.color,
+      icon: c.icon,
+      percentage: Math.round((counts[c.key] / total) * 100),
+    }));
+  }, [stations]);
+
+  const unreadAlerts = MOCK_ALERTS.filter(a => !a.read);
+  const nationalCategory = getAQICategory(nationalAvg);
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -71,6 +223,18 @@ export default function Dashboard() {
           <p className="text-sm text-muted-foreground mt-1">
             {currentTime.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             {' · '}{currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+<<<<<<< HEAD
+=======
+            {' · '}
+            <span className={dataSource === 'live' ? 'text-primary' : 'text-aqi-unhealthy'}>
+              {liveLoading ? 'Loading live data...' : dataSource === 'live' ? 'Live data (real-time)' : 'Mock data fallback'}
+            </span>
+            {lastRefresh && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                {isRefreshing ? '🔄 Updating...' : `✓ Updated ${lastRefresh.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
+              </span>
+            )}
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -86,8 +250,13 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Monitoring Stations"
+<<<<<<< HEAD
           value="12"
           subtitle="Across 10 states"
+=======
+          value={`${stations.length}`}
+          subtitle="Live station network"
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
           icon={<Activity className="w-5 h-5" />}
           trend={{ value: 8, label: 'vs last month' }}
           color="primary"
@@ -104,7 +273,11 @@ export default function Dashboard() {
         />
         <StatCard
           title="Avg PM2.5"
+<<<<<<< HEAD
           value={`${Math.round(INDIA_STATIONS.reduce((s, st) => s + st.pm25, 0) / INDIA_STATIONS.length)}`}
+=======
+          value={`${stations.length ? Math.round(stations.reduce((s, st) => s + st.pm25, 0) / stations.length) : 0}`}
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
           subtitle="μg/m³ · WHO limit: 15"
           icon={<Wind className="w-5 h-5" />}
           trend={{ value: -5, label: 'vs yesterday' }}
@@ -113,7 +286,11 @@ export default function Dashboard() {
         />
         <StatCard
           title="Clean Stations"
+<<<<<<< HEAD
           value={INDIA_STATIONS.filter(s => s.aqi <= 100).length}
+=======
+          value={stations.filter(s => s.aqi <= 100).length}
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
           subtitle="AQI ≤ 100 today"
           icon={<Shield className="w-5 h-5" />}
           trend={{ value: 15, label: 'vs yesterday' }}
@@ -245,7 +422,11 @@ export default function Dashboard() {
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
               <Pie
+<<<<<<< HEAD
                 data={POLLUTION_SOURCES}
+=======
+                data={sourceBreakdown}
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
                 cx="50%"
                 cy="50%"
                 innerRadius={45}
@@ -253,7 +434,11 @@ export default function Dashboard() {
                 paddingAngle={3}
                 dataKey="percentage"
               >
+<<<<<<< HEAD
                 {POLLUTION_SOURCES.map((entry, index) => (
+=======
+                {sourceBreakdown.map((entry, index) => (
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
                   <Cell key={index} fill={entry.color} opacity={0.9} />
                 ))}
               </Pie>
@@ -263,7 +448,11 @@ export default function Dashboard() {
             </PieChart>
           </ResponsiveContainer>
           <div className="space-y-1.5 mt-2">
+<<<<<<< HEAD
             {POLLUTION_SOURCES.map((s) => (
+=======
+            {sourceBreakdown.map((s) => (
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
               <div key={s.name} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: s.color }} />
@@ -290,12 +479,20 @@ export default function Dashboard() {
             </Link>
           </div>
           <div className="space-y-2">
+<<<<<<< HEAD
             {TOP_POLLUTED.map((station, i) => {
+=======
+            {topPolluted.map((station, i) => {
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
               const cat = getAQICategory(station.aqi);
               return (
                 <Link
                   key={station.id}
+<<<<<<< HEAD
                   to={`/station?id=${station.id}`}
+=======
+                  to={`/station?id=${encodeURIComponent(station.id)}`}
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
                   className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors group"
                 >
                   <span className="w-6 text-center text-xs font-mono text-muted-foreground">#{i + 1}</span>
@@ -333,12 +530,20 @@ export default function Dashboard() {
             </Link>
           </div>
           <div className="space-y-2">
+<<<<<<< HEAD
             {TOP_CLEAN.map((station, i) => {
+=======
+            {topClean.map((station, i) => {
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
               const cat = getAQICategory(station.aqi);
               return (
                 <Link
                   key={station.id}
+<<<<<<< HEAD
                   to={`/station?id=${station.id}`}
+=======
+                  to={`/station?id=${encodeURIComponent(station.id)}`}
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
                   className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <span className="w-6 text-center text-xs font-mono text-muted-foreground">#{i + 1}</span>
@@ -409,7 +614,11 @@ export default function Dashboard() {
           <p className="text-xs text-muted-foreground mb-4">Top 6 cities — PM2.5 vs PM10 (μg/m³)</p>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
+<<<<<<< HEAD
               data={INDIA_STATIONS.slice(0, 6).map(s => ({ city: s.city.split(' ')[0], pm25: s.pm25, pm10: s.pm10 }))}
+=======
+              data={stations.slice(0, 6).map(s => ({ city: s.city.split(' ')[0], pm25: s.pm25, pm10: s.pm10 }))}
+>>>>>>> 1024658 (Initial commit: backend + lovable frontend + firebase auth)
               margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
               barGap={2}
             >
